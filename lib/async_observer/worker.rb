@@ -1,4 +1,5 @@
 
+require 'mysql'
 require 'async_observer/queue'
 require 'async_observer/util'
 
