@@ -1,0 +1,193 @@
+<html>
+<head>
+<title>Async Observer</title>
+<link rel=stylesheet href=style.css>
+</head>
+<body>
+<div id="main">
+
+<h1>Async Observer</h1>
+<h1 style=margin-top:-1em>&#x2192; &#8216;async_observer&#8217;</h1>
+
+<h2>What</h2>
+
+<p>Async Observer is a Rails plugin that provides deep integration with <a
+href=http://xph.us/software/beanstalkd/>Beanstalk</a>.</p>
+
+
+<p><tt>beanstalkd</tt> is a fast, distributed, in-memory work-queue service. Its
+interface is generic, but is intended for use in reducing the latency of page
+views in high-volume web applications by running most time-consuming tasks
+asynchronously.</p>
+
+
+<h2>Installing</h2>
+
+
+<p>This plugin uses the <a
+href=http://beanstalk.rubyforge.org/>beanstalk-client</a> gem, so first you
+need to install that:</p>
+
+<pre class='syntax'>$ sudo gem install beanstalk-client</pre>
+
+<p>Then stick the <tt>async_observer</tt> plugin itself into your Rails
+project:</p>
+
+<pre>
+$ ./script/plugin install -x http://async-observer.rubyforge.org/svn/async_observer
+</pre>
+
+<h2>How to use it</h2>
+
+<p>If you don't define a queue, async-observer will just run things
+synchronously in-process. But assuming you want asynchrony, first you must put
+some lines into <tt>config/environments/*.rb</tt>:</p>
+
+<pre>
+config.after_initialize do
+  AsyncObserver::Queue.queue = Beanstalk::Pool.new(%w(localhost:11300))
+
+  # This value should change every time you make a release of your app.
+  AsyncObserver::Queue.app_version = RELEASE_STAMP
+
+  # This tells async-observer how to run a job from an old version.
+  AsyncObserver::Worker.run_version = proc do |version, job|
+
+    # Adjust this as necessary for your development or production environment.
+    dir = File.dirname(RAILS_ROOT) + '/' + version
+
+    AsyncObserver::Worker.run_job_in(dir, job)
+  end
+
+end
+</pre>
+
+<p>Make sure you start some workers:</p>
+
+<pre>
+$ $RAILS_ROOT/vendor/plugins/async_observer/bin/worker
+</pre>
+
+<p>Now running things asynchronously is a snap!</p>
+
+<h3>Hooks</h3>
+
+<p>You can define asynchronous hooks:</p>
+
+<h4>Existing synchronous hook</h4>
+<pre>
+class Person < ActiveRecord::Base
+  after_create do |person|
+    SiteStats.increment_members()
+  end
+end
+</pre>
+
+<h4>Becomes an asynchronous hook:</h4>
+<pre>
+class Person < ActiveRecord::Base
+  <b>async_</b>after_create do |person|
+    SiteStats.increment_members()
+  end
+end
+</pre>
+
+<h3>Method Calls</h3>
+
+<p>You can also call nearly any method asynchronously:</p>
+
+<h4>Existing synchronous call</h4>
+<pre>
+class Person < ActiveRecord::Base
+  def befriend(other_person)
+    Friendship.create(self, other_person)
+  end
+end
+</pre>
+
+<h4>Becomes an asynchronous call:</h4>
+<pre>
+class Person < ActiveRecord::Base
+  def befriend(other_person)
+    Friendship.<b>async_send(:create,</b> self, other_person)
+  end
+end
+</pre>
+
+<p>One caveat: the arguments to and receiver of an asynchronous call must be
+instances of one of the following list of types (see <a
+href=><tt>async_observer/lib/async_observer/queue.rb</tt></a> for details):
+Symbol, Module, NilClass, FalseClass, TrueClass, Numeric, String, Array, Hash,
+or ActiveRecord::Base.</p>
+
+<h2>Advanced Stuff</h2>
+
+<p>If you want to submit custom jobs that async-observer doesn't know how to
+process, you must teach async-observer how to handle them:</p>
+
+<pre>
+config.after_initialize do
+  AsyncObserver::Worker.handle = proc do |job|
+    return MyCustomJobHandler.run(job) if job.ybody[:type] == :custom
+    raise 'unknown job type'
+  end
+end
+</pre>
+
+<p>Normally the beanstalk client library handles its TCP connections pretty
+well. If you have other connections to juggle, you can define a select method
+for the beanstalk library to use:</p>
+
+<pre>
+config.after_initialize do
+  Beanstalk.select = MyCustomJobHandler.method(:select)
+end
+</pre>
+
+<p>Finally, there's a callback that gets run when the worker wants to shut
+down:</p>
+
+<pre>
+config.after_initialize do
+  AsyncObserver::Worker.finish = MyCustomJobHandler.method(:finish)
+end
+</pre>
+
+<h2>Forum</h2>
+
+
+<p>There&#8217;s a google group called <a
+href="http://groups.google.com/group/beanstalk-talk">beanstalk-talk</a> for all
+discussion regarding <tt>beanstalkd</tt> and its various client libraries.</p>
+
+
+<h2>How to submit patches</h2>
+
+
+<p>Read the <a href="http://drnicwilliams.com/2007/06/01/8-steps-for-fixing-other-peoples-code/">8 steps for fixing other people&#8217;s code</a> and for section <a href="http://drnicwilliams.com/2007/06/01/8-steps-for-fixing-other-peoples-code/#8b-google-groups">8b: Submit patch to Google Groups</a>, use the Google Group above.</p>
+
+<p>The repository is <code>http://async-observer.rubyforge.org/svn/</code> for
+anonymous access.</p>
+
+
+<h2>License</h2>
+
+
+<p>You can share this code under the terms of the <span class="caps">GPL</span> version 3.</p>
+
+
+<h2>Contact</h2>
+
+
+<p>Comments are welcome. Send any questions or comments to the
+<a href="http://groups.google.com/group/beanstalk-talk">beanstalk-talk</a> google group.</p>
+<p class="coda">
+<a href="mailto:kr@essembly.com">Keith Rarick</a>, 13th December 2007<br>
+</p>
+</div>
+
+<!-- insert site tracking codes here, like Google Urchin -->
+
+</body>
+</html>
+
