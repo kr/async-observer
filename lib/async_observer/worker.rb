@@ -1,8 +1,6 @@
 
-require 'beanstalk'
 require 'async_observer/queue'
 require 'async_observer/util'
-require 'lib/joey_3000_compliant_logger'
 
 module AsyncObserver; end
 

@@ -1,4 +1,6 @@
 
+require 'beanstalk-client'
+
 module AsyncObserver; end
 
 class AsyncObserver::Queue; end
