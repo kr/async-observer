@@ -6,6 +6,7 @@ module AsyncObserver; end
 
 class AsyncObserver::Worker
   extend AsyncObserver::Util
+  include AsyncObserver::Util
 
   SLEEP_TIME = 60 if !defined?(SLEEP_TIME) # rails loads this file twice
 
@@ -33,7 +34,7 @@ class AsyncObserver::Worker
   end
 
   def startup()
-    logb('worker-startup') do
+    log_bracketed('worker-startup') do
       RAILS_DEFAULT_LOGGER.info "pid is #{$$}"
       RAILS_DEFAULT_LOGGER.info "app version is #{AsyncObserver::Queue.app_version}"
       mark_db_socket_close_on_exec()
@@ -51,7 +52,7 @@ class AsyncObserver::Worker
   end
 
   def shutdown()
-    logb('worker-shutdown') do
+    log_bracketed('worker-shutdown') do
       do_all_work()
     end
   end
@@ -99,7 +100,7 @@ class AsyncObserver::Worker
   end
 
   def get_job()
-    logb('worker-get-job') do
+    log_bracketed('worker-get-job') do
       loop do
         begin
           AsyncObserver::Queue.queue.connect()
@@ -124,9 +125,9 @@ class AsyncObserver::Worker
   end
 
   def safe_dispatch(job)
-    logb('worker-dispatch') do
+    log_bracketed('worker-dispatch') do
       RAILS_DEFAULT_LOGGER.info "got #{job.inspect}:\n" + job.body
-      logb('job-stats') do
+      log_bracketed('job-stats') do
         job.stats.each do |k,v|
           RAILS_DEFAULT_LOGGER.info "#{k}=#{v}"
         end
