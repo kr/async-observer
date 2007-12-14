@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+# Rails initialization.
+# We do this here instead of using script/runner because script/runner
+# breaks __FILE__, which we use below.
+require File.expand_path(File.dirname(__FILE__) + '/../../../../config/boot')
+require RAILS_ROOT + '/config/environment'
+
+require 'async_observer/worker'
+AsyncObserver::Worker.new(binding).run_stdin_job()

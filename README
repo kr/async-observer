@@ -1,0 +1,7 @@
+This is Async Observer -- a Rails plugin that provides deep integration with
+Beanstalk.
+
+For more information, see http://async-observer.rubyforge.org/.
+
+For more information on Beanstalk, see its home page at
+http://xph.us/software/beanstalkd/.

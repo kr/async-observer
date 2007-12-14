@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+# Use the same pointer (and therefore same buffer) for stdout and stderr.
+$VERBOSE = nil; STDERR = $stderr = STDOUT = $stdout; $VERBOSE = false
+
+require 'time'
+
+# Rails initialization.
+# We do this here instead of using script/runner because script/runner
+# breaks __FILE__, which we use below.
+begin
+  puts "#!load-rails!begin!#{Time.now.utc.xmlschema(6)}"
+  require File.expand_path(File.dirname(__FILE__) + '/../../../../config/boot')
+  puts "RAILS_ROOT=#{RAILS_ROOT.inspect}"
+  require RAILS_ROOT + '/config/environment'
+ensure
+  puts "#!load-rails!end!#{Time.now.utc.xmlschema(6)}"
+end
+
+require 'async_observer/worker'
+AsyncObserver::Worker.new(binding).run()
