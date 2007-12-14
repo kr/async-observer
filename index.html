@@ -137,8 +137,8 @@ config.after_initialize do
 end
 </pre>
 
-<p>Normally the beanstalk client library handles its TCP connections pretty
-well. If you have other connections to juggle, you can define a select method
+<p>Normally the beanstalk client library handles just its own TCP connections.
+If you have other connections to juggle, you can define a select method
 for the beanstalk library to use:</p>
 
 <pre>
