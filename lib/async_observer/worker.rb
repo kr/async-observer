@@ -128,7 +128,7 @@ class AsyncObserver::Worker
         rescue Exception => ex
           @q_hint = nil # in case there's something wrong with this conn
           RAILS_DEFAULT_LOGGER.info(
-            "#{ex.class}: #{ex}\n" + ex.fixed_backtrace.join("\n"))
+            "#{ex.class}: #{ex}\n" + ex.backtrace.join("\n"))
           RAILS_DEFAULT_LOGGER.info 'something is wrong. We failed to get a job.'
           RAILS_DEFAULT_LOGGER.info "sleeping for #{SLEEP_TIME}s..."
           sleep(SLEEP_TIME)
@@ -159,7 +159,7 @@ class AsyncObserver::Worker
         RAILS_DEFAULT_LOGGER.info '#!oops'
         RAILS_DEFAULT_LOGGER.info "Job #{job.id} FAILED: #{job.inspect}"
         RAILS_DEFAULT_LOGGER.info(
-          "#{ex.class}: #{ex}\n" + ex.fixed_backtrace.join("\n"))
+          "#{ex.class}: #{ex}\n" + ex.backtrace.join("\n"))
         begin
           job.decay()
         rescue Beanstalk::UnexpectedResponse
