@@ -144,5 +144,8 @@ class Hash
 end
 
 module AsyncObserver::Extensions
-  def rrepr() "#{self.class.rrepr}.find(#{id.rrepr})" end
+  def rrepr()
+    method = (respond_to? :get_cache) ? 'get_cache' : 'find'
+    "#{self.class.rrepr}.#{method}(#{id.rrepr})"
+  end
 end
