@@ -19,7 +19,11 @@ require 'async_observer/queue'
 
 module AsyncObserver::Extensions
   def async_send(selector, *args)
-    AsyncObserver::Queue.put_call!(self, selector, args)
+    async_send_opts(selector, {}, *args)
+  end
+
+  def async_send_opts(selector, opts, *args)
+    AsyncObserver::Queue.put_call!(self, selector, opts, args)
   end
 end
 [Symbol, Module, Numeric, String, Array, Hash, ActiveRecord::Base].each do |c|

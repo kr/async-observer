@@ -24,6 +24,9 @@ class AsyncObserver::Queue; end
 
 class << AsyncObserver::Queue
   DEFAULT_PRI = 512
+  DEFAULT_DELAY = 0
+  DEFAULT_TTR = 120
+
   attr_accessor :queue, :app_version
 
   # This is a fake worker instance for running jobs synchronously.
@@ -39,16 +42,20 @@ class << AsyncObserver::Queue
     sync_worker.do_all_work()
   end
 
-  def put!(obj, pri=DEFAULT_PRI)
+  def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR)
     return sync_run(obj, pri) if !queue
     queue.connect()
-    queue.yput(obj, pri)
+    queue.yput(obj, pri, delay, ttr)
   end
 
-  def put_call!(obj, sel, args=[])
+  def put_call!(obj, sel, opts, args=[])
+    pri = opts.fetch(:pri, DEFAULT_PRI)
+    delay = opts.fetch(:delay, DEFAULT_DELAY)
+    ttr = opts.fetch(:ttr, DEFAULT_TTR)
+
     code = gen(obj, sel, args)
-    put!(pkg(code), DEFAULT_PRI)
-    RAILS_DEFAULT_LOGGER.info("put #{DEFAULT_PRI} #{code}")
+    put!(pkg(code), pri, delay, ttr)
+    RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
   end
 
   def pkg(code)
