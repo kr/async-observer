@@ -54,8 +54,9 @@ class << AsyncObserver::Queue
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
 
     code = gen(obj, sel, args)
-    put!(pkg(code), pri, delay, ttr)
-    RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
+    id = put!(pkg(code), pri, delay, ttr)
+    RAILS_DEFAULT_LOGGER.info("id <== put #{pri} #{code}")
+    id
   end
 
   def pkg(code)
