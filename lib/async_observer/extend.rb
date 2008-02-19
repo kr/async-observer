@@ -38,12 +38,14 @@ class << ActiveRecord::Base
     class_eval(code, "generated code from #{__FILE__}:#{__LINE__ - 1}", 1)
   end
 
+  cattr_accessor :async_hooks
+
   def add_async_hook(hook, block)
     prepare_async_hook_list(hook) << block
   end
 
   def prepare_async_hook_list(hook)
-    (@async_hooks ||= {})[hook] ||= new_async_hook_list(hook)
+    (self.async_hooks ||= {})[hook] ||= new_async_hook_list(hook)
   end
 
   def new_async_hook_list(hook)
@@ -61,6 +63,6 @@ class << ActiveRecord::Base
   end
 
   def run_async_hooks(hook, o)
-    @async_hooks[hook].each{|b| b.call(o)}
+    self.async_hooks[hook].each{|b| b.call(o)}
   end
 end
