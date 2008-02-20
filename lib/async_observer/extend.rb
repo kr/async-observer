@@ -38,7 +38,7 @@ class << ActiveRecord::Base
     class_eval(code, "generated code from #{__FILE__}:#{__LINE__ - 1}", 1)
   end
 
-  cattr_accessor :async_hooks
+  attr_accessor :async_hooks
 
   def add_async_hook(hook, block)
     prepare_async_hook_list(hook) << block
