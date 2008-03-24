@@ -16,7 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-require 'mysql'
+begin
+  require 'mysql'
+rescue LoadError
+  # Ignore case where we don't have mysql
+end
 require 'async_observer/queue'
 require 'async_observer/util'
 
