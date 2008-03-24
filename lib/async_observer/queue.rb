@@ -37,7 +37,7 @@ class << AsyncObserver::Queue
   # This runs jobs synchronously; it's used when no queue is configured.
   def sync_run(obj, pri=DEFAULT_PRI)
     body = YAML.dump(obj)
-    job = Beanstalk::Job.new(AsyncObserver::FakeConn.new(), 0, pri, body)
+    job = Beanstalk::Job.new(AsyncObserver::FakeConn.new(), 0, body)
     sync_worker.dispatch(job)
     sync_worker.do_all_work()
   end
