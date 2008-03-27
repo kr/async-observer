@@ -47,10 +47,13 @@ class AsyncObserver::Worker
 
   def initialize(top_binding)
     @top_binding = top_binding
+    @stop = false
   end
 
   def main_loop()
+    trap('TERM') { @stop = true }
     loop do
+      break if @stop
       safe_dispatch(get_job())
     end
   end
