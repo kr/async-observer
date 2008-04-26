@@ -35,6 +35,7 @@ class AsyncObserver::Worker
   class << self
     attr_accessor :finish
     attr_accessor :custom_error_handler
+    attr_accessor :before_filter
     attr_writer :handle, :run_version
 
     def handle
@@ -192,6 +193,8 @@ class AsyncObserver::Worker
 
   def run_ao_job(job)
     RAILS_DEFAULT_LOGGER.info 'running as async observer job'
+    f = self.class.before_filter
+    f.call(job) if f
     if version_matches?(job)
       run_code(job)
       job.delete()
