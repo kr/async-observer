@@ -26,6 +26,7 @@ class << AsyncObserver::Queue
   DEFAULT_PRI = 512
   DEFAULT_DELAY = 0
   DEFAULT_TTR = 120
+  DEFAULT_TUBE = 'default'
 
   attr_accessor :queue, :app_version
 
@@ -42,9 +43,11 @@ class << AsyncObserver::Queue
     sync_worker.do_all_work()
   end
 
-  def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR)
+  def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR,
+           tube=DEFAULT_TUBE)
     return sync_run(obj, pri) if !queue
     queue.connect()
+    queue.use(tube)
     queue.yput(obj, pri, delay, ttr)
   end
 
@@ -52,9 +55,10 @@ class << AsyncObserver::Queue
     pri = opts.fetch(:pri, DEFAULT_PRI)
     delay = opts.fetch(:delay, DEFAULT_DELAY)
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
+    tube = opts.fetch(:tube, app_version)
 
     code = gen(obj, sel, args)
-    id = put!(pkg(code), pri, delay, ttr)
+    id = put!(pkg(code), pri, delay, ttr, tube)
     RAILS_DEFAULT_LOGGER.info("id <== put #{pri} #{code}")
     id
   end

@@ -60,13 +60,15 @@ class AsyncObserver::Worker
 
   def startup()
     log_bracketed('worker-startup') do
+      appver = AsyncObserver::Queue.app_version
       RAILS_DEFAULT_LOGGER.info "pid is #{$$}"
-      RAILS_DEFAULT_LOGGER.info "app version is #{AsyncObserver::Queue.app_version}"
+      RAILS_DEFAULT_LOGGER.info "app version is #{appver}"
       mark_db_socket_close_on_exec()
       if AsyncObserver::Queue.queue.nil?
         RAILS_DEFAULT_LOGGER.info 'no queue has been configured'
         exit(1)
       end
+      AsyncObserver::Queue.queue.watch(appver) if appver
     end
   end
 
