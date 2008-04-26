@@ -41,6 +41,7 @@ class << AsyncObserver::Queue
     job = Beanstalk::Job.new(AsyncObserver::FakeConn.new(), 0, body)
     sync_worker.dispatch(job)
     sync_worker.do_all_work()
+    return 0, '0.0.0.0'
   end
 
   def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR,
@@ -48,7 +49,7 @@ class << AsyncObserver::Queue
     return sync_run(obj) if !queue
     queue.connect()
     queue.use(tube)
-    queue.yput(obj, pri, delay, ttr)
+    return queue.yput(obj, pri, delay, ttr), queue.last_server
   end
 
   def put_call!(obj, sel, opts, args=[])
@@ -58,9 +59,8 @@ class << AsyncObserver::Queue
     tube = opts.fetch(:tube, app_version)
 
     code = gen(obj, sel, args)
-    id = put!(pkg(code), pri, delay, ttr, tube)
-    RAILS_DEFAULT_LOGGER.info("id <== put #{pri} #{code}")
-    id
+    RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
+    put!(pkg(code), pri, delay, ttr, tube)
   end
 
   def pkg(code)
