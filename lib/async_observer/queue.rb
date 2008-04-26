@@ -28,7 +28,7 @@ class << AsyncObserver::Queue
   DEFAULT_TTR = 120
   DEFAULT_TUBE = 'default'
 
-  attr_accessor :queue, :app_version
+  attr_accessor :queue, :app_version, :after_put
 
   # This is a fake worker instance for running jobs synchronously.
   def sync_worker()
