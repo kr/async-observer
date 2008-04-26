@@ -191,7 +191,7 @@ class AsyncObserver::Worker
     if job.age > 60
       job.delete() # it's old; this error is most likely permanent
     else
-      raise ex # it could be replication delay so retry
+      job.decay() # it could be replication delay so retry quietly
     end
   end
 
