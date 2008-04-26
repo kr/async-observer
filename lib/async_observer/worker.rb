@@ -34,6 +34,7 @@ class AsyncObserver::Worker
 
   class << self
     attr_accessor :finish
+    attr_accessor :custom_error_handler
     attr_writer :handle, :run_version
 
     def handle
@@ -42,6 +43,10 @@ class AsyncObserver::Worker
 
     def run_version
       @run_version or raise 'no alternate version runner is defined'
+    end
+
+    def error_handler(&block)
+      self.custom_error_handler = block
     end
   end
 
@@ -165,17 +170,24 @@ class AsyncObserver::Worker
         begin job.release() rescue :ok end
         raise ex
       rescue Exception => ex
-        RAILS_DEFAULT_LOGGER.info '#!oops'
-        RAILS_DEFAULT_LOGGER.info "Job #{job.id} FAILED: #{job.inspect}"
-        RAILS_DEFAULT_LOGGER.info(
-          "#{ex.class}: #{ex}\n" + ex.backtrace.join("\n"))
-        begin
-          job.decay()
-        rescue Beanstalk::UnexpectedResponse
-          :ok
-        end
+        handle_error(job, ex)
       end
     end
+  end
+
+  def handle_error(job, ex)
+    if self.class.custom_error_handler
+      self.class.custom_error_handler.call(job, ex)
+    else
+      self.class.default_handle_error(job, ex)
+    end
+  end
+
+  def self.default_handle_error(job, ex)
+    RAILS_DEFAULT_LOGGER.info "Job failed: #{job.server}/#{job.id}"
+    RAILS_DEFAULT_LOGGER.info("#{ex.class}: #{ex}\n" + ex.backtrace.join("\n"))
+    job.decay()
+  rescue Beanstalk::UnexpectedResponse
   end
 
   def run_ao_job(job)
