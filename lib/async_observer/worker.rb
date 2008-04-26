@@ -200,7 +200,7 @@ class AsyncObserver::Worker
       job.delete()
     else
       RAILS_DEFAULT_LOGGER.info "mismatch; running alternate app version #{job.ybody[:appver]}"
-      self.class.run_version.call(job.ybody[:appver], job)
+      self.class.run_version.call(job.ybody[:appver], job, self)
     end
   rescue ActiveRecord::RecordNotFound => ex
     if job.age > 60
