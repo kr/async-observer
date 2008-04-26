@@ -74,7 +74,7 @@ class AsyncObserver::Worker
 
   # This prevents us from leaking fds when we exec. Only works for mysql.
   def mark_db_socket_close_on_exec()
-    ActiveRecord::Base.connection.set_close_on_exec()
+    ActiveRecord::Base.active_connections.each(&:set_close_on_exec)
   rescue NoMethodError
   end
 
