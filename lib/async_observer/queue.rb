@@ -36,7 +36,7 @@ class << AsyncObserver::Queue
   end
 
   # This runs jobs synchronously; it's used when no queue is configured.
-  def sync_run(obj, pri=DEFAULT_PRI)
+  def sync_run(obj)
     body = YAML.dump(obj)
     job = Beanstalk::Job.new(AsyncObserver::FakeConn.new(), 0, body)
     sync_worker.dispatch(job)
@@ -45,7 +45,7 @@ class << AsyncObserver::Queue
 
   def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR,
            tube=DEFAULT_TUBE)
-    return sync_run(obj, pri) if !queue
+    return sync_run(obj) if !queue
     queue.connect()
     queue.use(tube)
     queue.yput(obj, pri, delay, ttr)
