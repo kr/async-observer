@@ -92,7 +92,7 @@ class AsyncObserver::Worker
   end
 
   def run_stdin_job()
-    job = Beanstalk::Job.new(nil, 0, 0, $stdin.read())
+    job = Beanstalk::Job.new(nil, 0, $stdin.read())
     raise 'Fatal version mismatch' if !version_matches?(job)
     run_code(job)
   end
