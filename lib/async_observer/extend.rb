@@ -26,6 +26,7 @@ module AsyncObserver::Extensions
     id, addr = AsyncObserver::Queue.put_call!(self, selector, opts, args)
     f = AsyncObserver::Queue.after_put
     f.call(id, addr) if f
+    return id, addr
   end
 end
 [Symbol, Module, Numeric, String, Array, Hash, ActiveRecord::Base].each do |c|
