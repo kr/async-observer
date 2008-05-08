@@ -36,14 +36,10 @@ class AsyncObserver::Worker
     attr_accessor :finish
     attr_accessor :custom_error_handler
     attr_accessor :before_filter
-    attr_writer :handle, :run_version
+    attr_writer :handle
 
     def handle
       @handle or raise 'no custom handler is defined'
-    end
-
-    def run_version
-      @run_version or raise 'no alternate version runner is defined'
     end
 
     def error_handler(&block)
@@ -95,21 +91,6 @@ class AsyncObserver::Worker
     main_loop()
   rescue Interrupt
     shutdown()
-  end
-
-  def run_stdin_job()
-    job = Beanstalk::Job.new(nil, 0, $stdin.read())
-    raise 'Fatal version mismatch' if !version_matches?(job)
-    run_code(job)
-  end
-
-  def self.run_job_in(root, job)
-    RAILS_DEFAULT_LOGGER.info "run job #{job.id} in #{root}"
-    plopen(root + '/vendor/plugins/async_observer/bin/run-job', $stdout) do |io|
-      io.write(job.body)
-    end
-    raise 'job failed for some reason. check the log.' if !$?.success?
-    job.delete()
   end
 
   def q_hint()
@@ -195,13 +176,8 @@ class AsyncObserver::Worker
     RAILS_DEFAULT_LOGGER.info 'running as async observer job'
     f = self.class.before_filter
     f.call(job) if f
-    if version_matches?(job)
-      run_code(job)
-      job.delete()
-    else
-      RAILS_DEFAULT_LOGGER.info "mismatch; running alternate app version #{job.ybody[:appver]}"
-      self.class.run_version.call(job.ybody[:appver], job, self)
-    end
+    run_code(job)
+    job.delete()
   rescue ActiveRecord::RecordNotFound => ex
     if job.age > 60
       job.delete() # it's old; this error is most likely permanent
@@ -212,11 +188,6 @@ class AsyncObserver::Worker
 
   def run_code(job)
     eval(job.ybody[:code], @top_binding, "(beanstalk job #{job.id})", 1)
-  end
-
-  def version_matches?(job)
-    return true if job.ybody[:appver].nil? # always run versionless jobs
-    job.ybody[:appver] == AsyncObserver::Queue.app_version
   end
 
   def async_observer_job?(job)
