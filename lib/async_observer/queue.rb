@@ -67,7 +67,6 @@ class << AsyncObserver::Queue
     {
       :type => :rails,
       :code => code,
-      :appver => AsyncObserver::Queue.app_version,
     }
   end
 
