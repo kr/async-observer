@@ -56,7 +56,7 @@ class << AsyncObserver::Queue
     pri = opts.fetch(:pri, DEFAULT_PRI)
     delay = opts.fetch(:delay, DEFAULT_DELAY)
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
-    tube = opts.fetch(:tube, app_version)
+    tube = opts.fetch(:tube, (app_version or DEFAULT_TUBE))
 
     code = gen(obj, sel, args)
     RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
