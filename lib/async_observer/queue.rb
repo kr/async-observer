@@ -49,7 +49,10 @@ class << AsyncObserver::Queue
     return sync_run(obj) if !queue
     queue.connect()
     queue.use(tube)
-    return queue.yput(obj, pri, delay, ttr), queue.last_server
+    info = [queue.yput(obj, pri, delay, ttr), queue.last_server]
+    f = AsyncObserver::Queue.after_put
+    f.call(*info) if f
+    return info
   end
 
   def put_call!(obj, sel, opts, args=[])
