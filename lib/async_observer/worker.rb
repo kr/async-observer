@@ -45,6 +45,18 @@ class AsyncObserver::Worker
     def error_handler(&block)
       self.custom_error_handler = block
     end
+
+    def before_reserves
+      @before_reserves ||= []
+    end
+
+    def before_reserve(&block)
+      before_reserves << block
+    end
+
+    def run_before_reserve
+      before_reserves.each {|b| b.call()}
+    end
   end
 
   def initialize(top_binding)
@@ -118,9 +130,14 @@ class AsyncObserver::Worker
       loop do
         begin
           AsyncObserver::Queue.queue.connect()
+          self.class.run_before_reserve
           return reserve_and_set_hint()
         rescue Interrupt => ex
           raise ex
+        rescue Beanstalk::DeadlineSoonError
+          # Do nothing; immediately try again, giving the user a chance to
+          # clean up in the before_reserve hook.
+          RAILS_DEFAULT_LOGGER.info 'Job deadline soon; you should clean up.'
         rescue Exception => ex
           @q_hint = nil # in case there's something wrong with this conn
           RAILS_DEFAULT_LOGGER.info(
