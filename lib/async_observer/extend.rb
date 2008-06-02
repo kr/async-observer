@@ -119,4 +119,19 @@ class << ActiveRecord::Base
   def run_async_hooks(hook, o)
     self.async_hooks[hook].each{|b| b.call(o)}
   end
+
+  def send_to_instance(id, selector, *args)
+    find(id).send(selector, *args)
+  end
+
+  def async_each_opts(selector, opts, *args)
+    min = opts.fetch(:min, minimum(:id))
+    max = opts.fetch(:max, maximum(:id))
+
+    (min..max).async_each_opts(self, :send_to_instance, opts, selector, *args)
+  end
+
+  def async_each(selector, *args)
+    async_each_opts(selector, {}, *args)
+  end
 end
