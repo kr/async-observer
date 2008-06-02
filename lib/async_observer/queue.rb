@@ -159,6 +159,10 @@ class Hash
   def rrepr() '{' + map{|k,v| k.rrepr + '=>' + v.rrepr}.join(', ') + '}' end
 end
 
+class Range
+  def rrepr() "(#{first.rrepr}#{exclude_end? ? '...' : '..'}#{last.rrepr})" end
+end
+
 module AsyncObserver::Extensions
   def rrepr()
     method = (respond_to? :get_cache) ? 'get_cache' : 'find'

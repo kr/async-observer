@@ -17,6 +17,17 @@
 
 require 'async_observer/queue'
 
+CLASSES_TO_EXTEND = [
+  ActiveRecord::Base,
+  Array,
+  Hash,
+  Module,
+  Numeric,
+  Range,
+  String,
+  Symbol,
+]
+
 module AsyncObserver::Extensions
   def async_send(selector, *args)
     async_send_opts(selector, {}, *args)
@@ -26,7 +37,8 @@ module AsyncObserver::Extensions
     AsyncObserver::Queue.put_call!(self, selector, opts, args)
   end
 end
-[Symbol, Module, Numeric, String, Array, Hash, ActiveRecord::Base].each do |c|
+
+CLASSES_TO_EXTEND.each do |c|
   c.send :include, AsyncObserver::Extensions
 end
 
