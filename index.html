@@ -113,7 +113,49 @@ href=><tt>async_observer/lib/async_observer/queue.rb</tt></a> for details):
 Symbol, Module, NilClass, FalseClass, TrueClass, Numeric, String, Array, Hash,
 or ActiveRecord::Base.</p>
 
+<h3>Mapping over all records in a model</h3>
+
+<p>There's a powerful method called <code>ActiveRecord::Base#async_each</code>
+(and its sibling, <code>async_each_opts</code>), that lets you easily run a
+method on every instance of a model. For example:</p>
+
+<pre>
+Person.async_each(:something_cool)
+</pre>
+
+<p>If you have 57 people, this translates to 57 separate jobs:</p>
+
+<pre>
+Person.find(1).something_cool
+Person.find(2).something_cool
+...
+Person.find(57).something_cool
+</pre>
+
+<p>If you have a very large table, <code>async_each</code> will not cause the
+submitting process to block for a long time submitting many jobs. Instead, it
+will submit a few meta-jobs (by default 1000), each of which will submit more
+meta-jobs, until finally they submit actual jobs to run.</p>
+
+<p>This easily scales up to tens of millions of records as long as you have
+sufficient memory on your beanstalkd server and enough workers to run the jobs
+in a timely fashion.</p>
+
 <h2>Advanced Stuff</h2>
+
+<h3><code>Range#async_each</code></h3>
+
+<p>If you want to do the same thing for many integers, you can use
+<code>Range#async_each</code> to generate one job for every integer in the
+range. This is a lower-level method used by
+<code>ActiveRecord::Base#async_each</code>. The example above runs code similar
+to this:</p>
+
+<pre>
+(Person.minimum(:id)..Person.maximum(:id)).async_each(Person, :something_cool)
+</pre>
+
+<h3>Custom jobs</h3>
 
 <p>If you want to submit custom jobs that async-observer doesn't know how to
 process, you must teach async-observer how to handle them:</p>
