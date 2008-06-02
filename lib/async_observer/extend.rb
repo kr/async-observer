@@ -42,6 +42,48 @@ CLASSES_TO_EXTEND.each do |c|
   c.send :include, AsyncObserver::Extensions
 end
 
+class Range
+  DEFAULT_FANOUT_FUZZ = 0
+  DEFAULT_FANOUT_DEGREE = 1000
+
+  def split_to(n)
+    split_by((size + n - 1) / n) { |group| yield(group) }
+  end
+
+  def split_by(n)
+    raise ArgumentError.new('invalid slice size') if n < 1
+    n -= 1 if !exclude_end?
+    i = first
+    while member?(i)
+      j = [i + n, last].min
+      yield(Range.new(i, j, exclude_end?))
+      i = j + (exclude_end? ? 0 : 1)
+    end
+  end
+
+  def size
+    last - first + (exclude_end? ? 0 : 1)
+  end
+
+  def async_each_opts(rcv, selector, opts, *extra)
+    fanout_degree = opts.fetch(:fanout_degree, DEFAULT_FANOUT_DEGREE)
+    if size < fanout_degree
+      each {|i| rcv.async_send_opts(selector, opts, i, *extra)}
+    else
+      fanout_opts = opts.merge(:fuzz => opts.fetch(:fanout_fuzz,
+                                                   DEFAULT_FANOUT_FUZZ))
+      split_to(fanout_degree) do |subrange|
+        subrange.async_send_opts(:async_each_opts, fanout_opts, rcv, selector,
+                                 opts, *extra)
+      end
+    end
+  end
+
+  def async_each(rcv, selector, *extra)
+    async_each_opts(rcv, selector, {}, *extra)
+  end
+end
+
 HOOKS = [:after_create, :after_update, :after_save]
 
 class << ActiveRecord::Base
