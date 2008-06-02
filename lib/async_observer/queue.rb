@@ -24,6 +24,7 @@ class AsyncObserver::Queue; end
 
 class << AsyncObserver::Queue
   DEFAULT_PRI = 512
+  DEFAULT_FUZZ = 0
   DEFAULT_DELAY = 0
   DEFAULT_TTR = 120
   DEFAULT_TUBE = 'default'
@@ -57,13 +58,14 @@ class << AsyncObserver::Queue
 
   def put_call!(obj, sel, opts, args=[])
     pri = opts.fetch(:pri, DEFAULT_PRI)
+    fuzz = opts.fetch(:fuzz, DEFAULT_FUZZ)
     delay = opts.fetch(:delay, DEFAULT_DELAY)
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
     tube = opts.fetch(:tube, (app_version or DEFAULT_TUBE))
 
     code = gen(obj, sel, args)
     RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
-    put!(pkg(code), pri, delay, ttr, tube)
+    put!(pkg(code), pri + rand(fuzz + 1), delay, ttr, tube)
   end
 
   def pkg(code)
