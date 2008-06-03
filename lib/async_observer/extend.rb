@@ -121,7 +121,8 @@ class << ActiveRecord::Base
   end
 
   def send_to_instance(id, selector, *args)
-    find(id).send(selector, *args)
+    x = find_by_id(id)
+    x.send(selector, *args) if x
   end
 
   def async_each_opts(selector, opts, *args)
