@@ -47,7 +47,7 @@ class << AsyncObserver::Queue
 
   def put!(obj, pri=DEFAULT_PRI, delay=DEFAULT_DELAY, ttr=DEFAULT_TTR,
            tube=DEFAULT_TUBE)
-    return sync_run(obj) if !queue
+    return sync_run(obj) if (:direct.equal?(pri) or !queue)
     queue.connect()
     queue.use(tube)
     info = [queue.yput(obj, pri, delay, ttr), queue.last_server]
