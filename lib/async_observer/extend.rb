@@ -92,32 +92,27 @@ class << ActiveRecord::Base
     class_eval(code, "generated code from #{__FILE__}:#{__LINE__ - 1}", 1)
   end
 
-  cattr_accessor :async_hooks
-
   def add_async_hook(hook, block)
-    prepare_async_hook_list(hook) << block
+    async_hooks[hook] << block
   end
 
-  def prepare_async_hook_list(hook)
-    (self.async_hooks ||= {})[hook] ||= new_async_hook_list(hook)
-  end
+  def async_hooks
+    @async_hooks ||= Hash.new do |hash, hook|
+      ahook = :"_async_#{hook}"
 
-  def new_async_hook_list(hook)
-    ahook = :"_async_#{hook}"
+      # This is for the producer's benefit
+      send(hook){|o| async_send(ahook, o)}
 
-    # This is for the producer's benefit
-    send(hook){|o| o.async_send(ahook)}
+      # This is for the worker's benefit
+      code = "def #{ahook}(o) run_async_hooks(#{hook.inspect}, o) end"
+      instance_eval(code, __FILE__, __LINE__ - 1)
 
-    # This is for the worker's benefit
-    define_method(ahook) do
-      self.class.run_async_hooks(hook, self)
+      hash[hook] = []
     end
-
-    return []
   end
 
   def run_async_hooks(hook, o)
-    self.async_hooks[hook].each{|b| b.call(o)}
+    async_hooks[hook].each{|b| b.call(o)}
   end
 
   def send_to_instance(id, selector, *args)
