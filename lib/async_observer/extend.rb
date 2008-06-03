@@ -67,7 +67,7 @@ class Range
 
   def async_each_opts(rcv, selector, opts, *extra)
     fanout_degree = opts.fetch(:fanout_degree, DEFAULT_FANOUT_DEGREE)
-    if size < fanout_degree
+    if size <= fanout_degree
       each {|i| rcv.async_send_opts(selector, opts, i, *extra)}
     else
       fanout_opts = opts.merge(:fuzz => opts.fetch(:fanout_fuzz,
