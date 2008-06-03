@@ -15,10 +15,10 @@
 href=http://xph.us/software/beanstalkd/>Beanstalk</a>.</p>
 
 
-<p><tt>beanstalkd</tt> is a fast, distributed, in-memory work-queue service. Its
-interface is generic, but is intended for use in reducing the latency of page
-views in high-volume web applications by running most time-consuming tasks
-asynchronously.</p>
+<p><code>beanstalkd</code> is a fast, distributed, in-memory work-queue
+service. Its interface is generic, but is intended for use in reducing the
+latency of page views in high-volume web applications by running most
+time-consuming tasks asynchronously.</p>
 
 
 <h2>Installing</h2>
@@ -33,7 +33,7 @@ need to install that:</p>
 
 <pre class='syntax'>$ sudo gem install beanstalk-client</pre>
 
-<p>Then stick the <tt>async_observer</tt> plugin itself into your Rails
+<p>Then stick the <code>async_observer</code> plugin itself into your Rails
 project:</p>
 
 <pre>
@@ -44,7 +44,7 @@ $ ./script/plugin install git://github.com/kr/async-observer.git
 
 <p>If you don't define a queue, async-observer will just run things
 synchronously in-process. But assuming you want asynchrony, first you must put
-some lines into <tt>config/environments/*.rb</tt>:</p>
+some lines into <code>config/environments/*.rb</code>:</p>
 
 <pre>
 config.after_initialize do
@@ -109,7 +109,7 @@ end
 
 <p>One caveat: the arguments to and receiver of an asynchronous call must be
 instances of one of the following list of types (see <a
-    href=http://github.com/kr/async-observer/tree/master/lib/async_observer/extend.rb><tt>async_observer/lib/async_observer/queue.rb</tt></a>
+    href=http://github.com/kr/async-observer/tree/master/lib/async_observer/extend.rb><code>async_observer/lib/async_observer/queue.rb</code></a>
 for details): Symbol, Module, NilClass, FalseClass, TrueClass, Numeric, String,
 Array, Hash, or ActiveRecord::Base.</p>
 
@@ -192,8 +192,9 @@ end
 
 
 <p>There&#8217;s a google group called <a
-href="http://groups.google.com/group/beanstalk-talk">beanstalk-talk</a> for all
-discussion regarding <tt>beanstalkd</tt> and its various client libraries.</p>
+    href="http://groups.google.com/group/beanstalk-talk">beanstalk-talk</a> for
+all discussion regarding <code>beanstalkd</code> and its various client
+libraries.</p>
 
 
 <h2>How to submit patches</h2>
