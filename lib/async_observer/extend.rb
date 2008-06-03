@@ -89,7 +89,7 @@ HOOKS = [:after_create, :after_update, :after_save]
 class << ActiveRecord::Base
   HOOKS.each do |hook|
     code = %Q{def async_#{hook}(&b) add_async_hook(#{hook.inspect}, b) end}
-    class_eval(code, "generated code from #{__FILE__}:#{__LINE__ - 1}", 1)
+    class_eval(code, __FILE__, __LINE__ - 1)
   end
 
   def add_async_hook(hook, block)
