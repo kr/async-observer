@@ -134,6 +134,8 @@ class AsyncObserver::Worker
           return reserve_and_set_hint()
         rescue Interrupt => ex
           raise ex
+        rescue SignalException => ex
+          raise ex
         rescue Beanstalk::DeadlineSoonError
           # Do nothing; immediately try again, giving the user a chance to
           # clean up in the before_reserve hook.
