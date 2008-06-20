@@ -63,9 +63,11 @@ class << AsyncObserver::Queue
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
     tube = opts.fetch(:tube, (app_version or DEFAULT_TUBE))
 
+    pri = pri + rand(fuzz + 1) if !:direct.equal?(pri)
+
     code = gen(obj, sel, args)
     RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
-    put!(pkg(code), pri + rand(fuzz + 1), delay, ttr, tube)
+    put!(pkg(code), pri, delay, ttr, tube)
   end
 
   def pkg(code)
