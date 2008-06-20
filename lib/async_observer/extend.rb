@@ -72,6 +72,8 @@ class Range
     else
       fanout_opts = opts.merge(:fuzz => opts.fetch(:fanout_fuzz,
                                                    DEFAULT_FANOUT_FUZZ))
+      fanout_opts[:pri] = opts[:fanout_pri] || opts[:pri]
+      fanout_opts = fanout_opts.compact
       split_to(fanout_degree) do |subrange|
         subrange.async_send_opts(:async_each_opts, fanout_opts, rcv, selector,
                                  opts, *extra)
