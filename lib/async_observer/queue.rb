@@ -56,25 +56,25 @@ class << AsyncObserver::Queue
     return info
   end
 
+  SUBMIT_OPTS = [:pri, :fuzz, :delay, :ttr, :tube]
+
   def put_call!(obj, sel, opts, args=[])
     pri = opts.fetch(:pri, DEFAULT_PRI)
     fuzz = opts.fetch(:fuzz, DEFAULT_FUZZ)
     delay = opts.fetch(:delay, DEFAULT_DELAY)
     ttr = opts.fetch(:ttr, DEFAULT_TTR)
     tube = opts.fetch(:tube, (app_version or DEFAULT_TUBE))
+    worker_opts = opts.reject{|k,v| SUBMIT_OPTS.include?(k)}
 
     pri = pri + rand(fuzz + 1) if !:direct.equal?(pri)
 
     code = gen(obj, sel, args)
     RAILS_DEFAULT_LOGGER.info("put #{pri} #{code}")
-    put!(pkg(code), pri, delay, ttr, tube)
+    put!(pkg(code, worker_opts), pri, delay, ttr, tube)
   end
 
-  def pkg(code)
-    {
-      :type => :rails,
-      :code => code,
-    }
+  def pkg(code, opts)
+    opts.merge(:type => :rails, :code => code)
   end
 
   # Be careful not to pass in a selector that's not valid ruby source.
