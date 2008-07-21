@@ -206,6 +206,7 @@ class AsyncObserver::Worker
     RAILS_DEFAULT_LOGGER.info 'running as async observer job'
     f = self.class.before_filter
     f.call(job) if f
+    job.delete if job.ybody[:delete_first]
     run_code(job)
     job.delete()
   rescue ActiveRecord::RecordNotFound => ex
